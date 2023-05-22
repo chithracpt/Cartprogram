@@ -1,0 +1,88 @@
+# Product catalog
+catalog = {
+    "Product A": 20,
+    "Product B": 40,
+    "Product C": 50
+}
+
+# Discount rules
+discount_rules = {
+    "flat_10_discount": (200, 10),
+    "bulk_5_discount": (10, 5),
+    "bulk_10_discount": (20, 10),
+    "tiered_50_discount": (30, 50)
+}
+
+# Fees
+gift_wrap_fee = 1
+shipping_fee_per_package = 5
+products_per_package = 10
+
+# Function to calculate the discount amount
+def calculate_discount(quantity, price, rule):
+    if rule == "flat_10_discount":
+        if quantity * price > 200:
+            return 10
+    elif rule == "bulk_5_discount":
+        if quantity > 10:
+            return quantity * price * 0.05
+    elif rule == "bulk_10_discount":
+        if quantity > 20:
+            return quantity * price * 0.1
+    elif rule == "tiered_50_discount":
+        if quantity > 30:
+            excess_quantity = quantity - 15
+            if excess_quantity > 0:
+                return excess_quantity * price * 0.5
+    return 0
+
+# Function to calculate the total cost of products in the cart
+def calculate_total_cost(cart):
+    subtotal = 0
+    total_discount = 0
+    total_quantity = 0
+    for product, quantity in cart.items():
+        price = catalog[product]
+        subtotal += quantity * price
+        total_quantity += quantity
+
+        max_discount = 0
+        applied_rule = None
+        for rule, (min_quantity, discount) in discount_rules.items():
+            if quantity >= min_quantity:
+                rule_discount = calculate_discount(quantity, price, rule)
+                if rule_discount > max_discount:
+                    max_discount = rule_discount
+                    applied_rule = rule
+
+        total_discount += max_discount
+        print(f"{product}: Quantity: {quantity}, Total: {quantity * price}")
+
+        if applied_rule:
+            print(f"Discount applied ({applied_rule}): ${max_discount}")
+
+    shipping_fee = (total_quantity // products_per_package) * shipping_fee_per_package
+    gift_wrap_fee_total = gift_wrap_fee * total_quantity
+    total = subtotal - total_discount + shipping_fee + gift_wrap_fee_total
+
+    print(f"\nSubtotal: ${subtotal}")
+    print(f"Shipping fee: ${shipping_fee}")
+    print(f"Gift wrap fee: ${gift_wrap_fee_total}")
+    print(f"Total: ${total}")
+
+
+# Main program
+cart = {}
+for product in catalog.keys():
+    quantity = int(input(f"Enter the quantity of {product}: "))
+    cart[product] = quantity
+
+    gift_wrap = input(f"Wrap {product} as a gift? (yes/no): ")
+    if gift_wrap.lower() == "yes":
+        gift_wrap_fee_total = gift_wrap_fee * quantity
+        total = quantity * catalog[product] + gift_wrap_fee_total
+        print(f"Gift wrap fee for {product}: ${gift_wrap_fee_total}")
+        print(f"Total cost for {product} (including gift wrap fee): ${total}")
+        print()
+
+calculate_total_cost(cart)
